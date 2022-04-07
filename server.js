@@ -1,68 +1,85 @@
-const express = require('express');
-const path = require('path');
-
+const express = require("express");
+const path = require("path");
+const fs = require("fs");
 
 const PORT = process.env.PORT || 3001;
 
 const app = express();
-
-const notes = require('./db/db.json');
-
 
 // Middleware for parsing JSON and urlencoded form data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 // app.use('/api', api);
 
-app.use(express.static('public'));
+app.use(express.static("public"));
 
-// GET Route for homepage
-app.get('/', (req, res) =>
-  res.sendFile(path.join(__dirname, '/public/index.html'))
-);
 
-app.get('/notes', (req, res) =>
-  res.sendFile(path.join(__dirname, '/public/notes.html'))
-);
+fs.readFile("./db/db.json", "utf8", (err, data) => {
+  if (err) {
+    console.error(err);
+  } else {
+    const notes = JSON.parse(data);
 
-app.get('/api/notes', (req, res) => {
-    console.info(`GET /api/notes`);
-    res.status(200).json(notes);
-  });
 
-app.post('/api/notes', (req, res) => {
-    const newNote = req.body;
+    app.get("/notes", (req, res) =>
+    res.sendFile(path.join(__dirname, "/public/notes.html"))
+  );
 
-    const response = {
-        status: 'success',
+    app.get("/api/notes", (req, res) => {
+      console.info(`GET /api/notes`);
+      res.json(notes);
+    });
+
+    app.post("/api/notes", (req, res) => {
+      let newNote = req.body;
+
+      const response = {
+        status: "success",
         body: newNote,
       };
-  
+
+      notes.push(newNote);
+      addNote();
+
       res.json(response);
     });
 
+    app.get("/api/notes/:id", (req, res)  => {
+      console.info(`GET /api/notes`);
+      res.json(notes[req.params.id]);
+    });
 
+    app.delete("/api/notes/:id", (req, res) => {
+      console.info(`DELETE /api/notes`);
+      res.json(notes[req.params.id]);
+    });
 
-// Wildcard route to direct users to a 404 page
-app.get('*', (req, res) =>
-  res.sendFile(path.join(__dirname, '/public/index.html'))
-);
+    // Wildcard route to direct users to a 404 page
+    app.get("*", (req, res) =>
+      res.sendFile(path.join(__dirname, "/public/index.html"))
+    );
 
+    // POST /api/notes should receive a new note to save on the request body,
+    // add it to the db.json file, and then return the new note to the client.
+    // You'll need to find a way to give each note a unique id when it's saved
+    // (look into npm packages that could do this for you).
 
+    // DELETE /api/notes/:id should receive a query parameter that contains
+    // the id of a note to delete. To delete a note, you'll need to read all
+    // notes from the db.json file, remove the note with the given id property,
+    // and then rewrite the notes to the db.json file.
 
+    // Write updated reviews back to the file
+  function addNote() {
+    fs.writeFile("./db/db.json", JSON.stringify(notes, null, 4), (writeErr) =>
+      writeErr ? console.error(writeErr) : console.info("Success")
+    );
+  }
+  }
+});
 
-
-  
-    //   for (let i = 0; i < notes.length; i++) {
-    //     const currentNote = notes[i];
-    //     if (currentNote.notes === noteId) {
-    //       res.json(currentNote);
-    //       return;
-    //     }
-    //   }
- 
-  
 
 app.listen(PORT, () =>
   console.log(`App listening at http://localhost:${PORT} 🚀`)
 );
+
