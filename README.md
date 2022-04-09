@@ -17,3 +17,6 @@ The purpose of this activity is to take starter code and modify it to complete a
 * When I click on the "+" icon the entry fields become empty.
 
 * When I click on the trashcan icon, that particular note is deleted from the page and removed from the database. 
+
+
+![AD1EA748-1CA4-424C-8A52-52AAE501942E](https://user-images.githubusercontent.com/94868925/162589958-59ae8297-7bdc-4d67-970d-d0aabe24ac21.png)
